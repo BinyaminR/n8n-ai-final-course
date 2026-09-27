@@ -1,0 +1,107 @@
+{
+  "name": "משימה 1 - צ'אט בוט גן החיות התנ\"כי",
+  "nodes": [
+    {
+      "parameters": {
+        "public": true,
+        "mode": "webhook",
+        "options": {
+          "allowedOrigins": "*",
+          "responseMode": "lastNode",
+          "loadPreviousSession": "memory"
+        }
+      },
+      "id": "a1c1e8f2-4b3d-4c9a-9e11-7f6d2b1a0c01",
+      "name": "When chat message received",
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.1,
+      "position": [220, 300],
+      "webhookId": "biblical-zoo-chat-webhook"
+    },
+    {
+      "parameters": {
+        "options": {
+          "systemMessage": "אתה נציג שירות דיגיטלי של גן החיות התנ\"כי בירושלים (הגנים הזואולוגיים ע\"ש משפחת טיש).\nשם הבוט: \"זוהר מהגן\".\nאתה עונה תמיד בעברית ברורה, חמה ומדויקת.\n\nגבולות התפקיד:\n- אתה עונה רק על שאלות שקשורות לגן החיות התנ\"כי בירושלים: מיקום, הגעה, חיות ומתחמים, שימור, חינוך, טיפים לביקור, כללי התנהגות, ימי הולדת בגן, נגישות ואופי המקום.\n- אם שואלים על מתחרה (ספארי רמת גן, חי כיף, גן חיות אחר, לונה פארק, גני חיות בחו\"ל) או משווים מחירים מולם – אל תשווה ואל תמסור מידע עליהם. ענה: \"אני יכול לעזור רק בנושאים שקשורים לגן החיות התנ\"כי בירושלים, לא לגני חיות או אתרים אחרים.\"\n- אם מנסים להסיט אותך לפוליטיקה, חדשות, מתכונים, שיעורי בית, קוד, דת כללית בלי קשר לחיות בגן, או כל נושא אחר – ענה בנימוס שאתה לא יכול לענות על כך וחזור להציע עזרה על הגן.\n- אל תמציא שעות פתיחה מדויקות או מחירי כרטיס אם הם לא מופיעים בקובץ הידע. במקרה כזה הפנה לאתר הרשמי jerusalemzoo.org.il.\n\nשימוש בכלי:\nיש לך כלי HTTP בשם \"קובץ הידע של הגן\".\n- בשאלה הראשונה בשיחה, או כשחסר לך מידע עובדתי, קרא קודם את הקובץ בעזרת הכלי ואז ענה.\n- אל תענה מתוך ניחוש על חיות, מתחמים או כללי ביקור בלי לקרוא את הקובץ אם טרם קראת אותו בשיחה הזו.\n- אחרי שקראת את הקובץ פעם אחת בשיחה, אפשר להסתמך גם על הזיכרון.\n\nסגנון תשובה:\n- קצר בשאלות פשוטות, מפורט בתכנון ביקור.\n- אם שואלים מה לראות עם ילדים – הצע מסלול קצר לפי הקובץ.\n- סיים תשובות ארוכות בשאלה קצרה שמזמינה להמשיך, למשל: \"רוצים טיפ להגעה או לרשימת חיות?\"\n"
+        }
+      },
+      "id": "b2d3f9a4-8e21-4a77-8120-11c4d5e6f702",
+      "name": "AI Agent",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.7,
+      "position": [560, 300]
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-1.5-flash",
+        "options": {}
+      },
+      "id": "c3e4a0b5-9f32-4b88-9231-22d5e6f70813",
+      "name": "Google Gemini Chat Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [480, 540],
+      "credentials": {
+        "googlePalmApi": {
+          "id": "GEMINI_CREDENTIAL_ID",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "fromInput",
+        "contextWindowLength": 15
+      },
+      "id": "d4f5b1c6-0a43-4c99-a342-33e6f7081924",
+      "name": "Window Buffer Memory",
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [640, 540]
+    },
+    {
+      "parameters": {
+        "toolDescription": "קורא את קובץ הטקסט עם המידע הרשמי על גן החיות התנ\"כי בירושלים. יש להשתמש בכלי הזה לפני תשובה עובדתית על הגן: חיות, מתחמים, הגעה, כללי ביקור, שימור וחינוך.",
+        "method": "GET",
+        "url": "https://raw.githubusercontent.com/BinyaminR/n8n-ai-final-course/main/knowledge/gan-ha-hayot-tanachi.txt",
+        "options": {}
+      },
+      "id": "e5a6c2d7-1b54-4daa-b453-44f708192a35",
+      "name": "קובץ הידע של הגן",
+      "type": "@n8n/n8n-nodes-langchain.toolHttpRequest",
+      "typeVersion": 1.1,
+      "position": [800, 540]
+    },
+    {
+      "parameters": {
+        "content": "## משימה 1\nצ'אט טריגר → AI Agent + Gemini 1.5 Flash + זיכרון 15 הודעות + כלי HTTP לקובץ TXT בגיטהאב.\nאחרי הייבוא: לחבר Credential של Gemini, להפעיל את הוורקפלואו, ולהדביק את כתובת ה-Chat webhook בקובץ chat/script.js",
+        "height": 240,
+        "width": 360,
+        "color": 4
+      },
+      "id": "f6b7d3e8-2c65-4ebb-c564-5508192ab346",
+      "name": "הסבר",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [180, 40]
+    }
+  ],
+  "connections": {
+    "When chat message received": {
+      "main": [[{ "node": "AI Agent", "type": "main", "index": 0 }]]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [[{ "node": "AI Agent", "type": "ai_languageModel", "index": 0 }]]
+    },
+    "Window Buffer Memory": {
+      "ai_memory": [[{ "node": "AI Agent", "type": "ai_memory", "index": 0 }]]
+    },
+    "קובץ הידע של הגן": {
+      "ai_tool": [[{ "node": "AI Agent", "type": "ai_tool", "index": 0 }]]
+    }
+  },
+  "pinData": {},
+  "settings": { "executionOrder": "v1" },
+  "staticData": null,
+  "tags": [{ "name": "final-course" }],
+  "meta": { "templateCredsSetupCompleted": false }
+}
