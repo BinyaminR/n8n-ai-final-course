@@ -1,0 +1,169 @@
+{
+  "name": "משימה 2 - ברכת יום הולדת",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "birthday-greeting",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "11111111-aaaa-4b01-8001-birthdaytrig01",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [180, 300],
+      "webhookId": "birthday-greeting-webhook"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {"id": "f1", "name": "recipientName", "value": "={{ $json.body.recipientName || $json.recipientName }}", "type": "string"},
+            {"id": "f2", "name": "senderName", "value": "={{ $json.body.senderName || $json.senderName }}", "type": "string"},
+            {"id": "f3", "name": "gender", "value": "={{ $json.body.gender || $json.gender }}", "type": "string"},
+            {"id": "f4", "name": "favoriteTopics", "value": "={{ $json.body.favoriteTopics || $json.favoriteTopics }}", "type": "string"},
+            {"id": "f5", "name": "recipientEmail", "value": "={{ $json.body.recipientEmail || $json.recipientEmail }}", "type": "string"}
+          ]
+        },
+        "options": {}
+      },
+      "id": "22222222-bbbb-4b02-8002-birthdayset002",
+      "name": "סידור שדות הטופס",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [400, 300]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=שם מקבל הברכה: {{ $json.recipientName }}\nמין מקבל הברכה: {{ $json.gender }}\nשם מייצר הברכה: {{ $json.senderName }}\nנושאים אהובים: {{ $json.favoriteTopics }}\n\nכתוב ברכת יום הולדת בעברית לפי ההוראות שבמערכת.",
+        "options": {
+          "systemMessage": "אתה כותב ברכות יום הולדת בעברית בלבד.\n\nסגנון הכתיבה:\n- חם, שמח וקליל, כמו גלויה משפחתית נחמדה ולא כמו פרסומת.\n- בין 70 ל-120 מילים.\n- בלי אימוג'י מוגזמים. מותר לכל היותר 3 אימוג'י עדינים.\n- בלי האשטגים ובלי קישורים.\n\nכללי לשון:\n- אם המין הוא זכר / בן / male – כתוב בלשון זכר בלבד.\n- אם המין הוא נקבה / בת / female – כתוב בלשון נקבה בלבד.\n- שלב את שם מקבל הברכה ואת שם השולח.\n- שלב את הנושאים האהובים בצורה טבעית בתוך הברכה, לא כרשימת קניות.\n\nמבנה:\n1. פתיחה לשמחה ליום ההולדת.\n2. משפט או שניים שמחברים לנושאים האהובים.\n3. איחול אישי מהשולח.\n4. סיום חם עם חתימת שם השולח.\n\nהחזר רק את טקסט הברכה עצמו, בלי הקדמה ובלי הסברים."
+        }
+      },
+      "id": "33333333-cccc-4b03-8003-birthdayagent03",
+      "name": "AI Agent",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.7,
+      "position": [640, 300]
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-1.5-flash",
+        "options": {}
+      },
+      "id": "44444444-dddd-4b04-8004-birthdaygem004",
+      "name": "Google Gemini Chat Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [560, 540],
+      "credentials": {
+        "googlePalmApi": {
+          "id": "GEMINI_CREDENTIAL_ID",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {"id": "s1", "name": "שם מקבל הברכה", "value": "={{ $('סידור שדות הטופס').item.json.recipientName }}", "type": "string"},
+            {"id": "s2", "name": "שם מייצר הברכה", "value": "={{ $('סידור שדות הטופס').item.json.senderName }}", "type": "string"},
+            {"id": "s3", "name": "מין מקבל הברכה", "value": "={{ $('סידור שדות הטופס').item.json.gender }}", "type": "string"},
+            {"id": "s4", "name": "תיאור נושאים אהובים", "value": "={{ $('סידור שדות הטופס').item.json.favoriteTopics }}", "type": "string"},
+            {"id": "s5", "name": "ברכה שנוצרה", "value": "={{ $json.output }}", "type": "string"},
+            {"id": "s6", "name": "מייל מקבל הברכה", "value": "={{ $('סידור שדות הטופס').item.json.recipientEmail }}", "type": "string"}
+          ]
+        },
+        "options": {}
+      },
+      "id": "55555555-eeee-4b05-8005-birthdayprep05",
+      "name": "הכנת רשומה לאיירטייבל",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [900, 300]
+    },
+    {
+      "parameters": {
+        "operation": "create",
+        "base": {"__rl": true, "value": "appREPLACE_BASE_ID", "mode": "id"},
+        "table": {"__rl": true, "value": "tblREPLACE_TABLE_ID", "mode": "id"},
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [
+            {"id": "שם מקבל הברכה", "displayName": "שם מקבל הברכה", "required": false, "defaultMatch": false, "display": true, "type": "string", "readOnly": false, "removed": false},
+            {"id": "שם מייצר הברכה", "displayName": "שם מייצר הברכה", "required": false, "defaultMatch": false, "display": true, "type": "string", "readOnly": false, "removed": false},
+            {"id": "מין מקבל הברכה", "displayName": "מין מקבל הברכה", "required": false, "defaultMatch": false, "display": true, "type": "string", "readOnly": false, "removed": false},
+            {"id": "תיאור נושאים אהובים", "displayName": "תיאור נושאים אהובים", "required": false, "defaultMatch": false, "display": true, "type": "string", "readOnly": false, "removed": false},
+            {"id": "ברכה שנוצרה", "displayName": "ברכה שנוצרה", "required": false, "defaultMatch": false, "display": true, "type": "string", "readOnly": false, "removed": false},
+            {"id": "מייל מקבל הברכה", "displayName": "מייל מקבל הברכה", "required": false, "defaultMatch": false, "display": true, "type": "string", "readOnly": false, "removed": false}
+          ]
+        },
+        "options": {}
+      },
+      "id": "66666666-ffff-4b06-8006-birthdayair006",
+      "name": "Airtable",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [1140, 300],
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "AIRTABLE_CREDENTIAL_ID",
+          "name": "Airtable Personal Access Token account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "email",
+        "operation": "send",
+        "sendHTML": true,
+        "subject": "=יום הולדת שמח, {{ $('סידור שדות הטופס').item.json.recipientName }}!",
+        "htmlContent": "=<div dir=\"rtl\" style=\"font-family:Arial,sans-serif;line-height:1.7;max-width:560px\"><h2>יום הולדת שמח!</h2><p>{{ $('הכנת רשומה לאיירטייבל').item.json['ברכה שנוצרה'] }}</p><hr/><p style=\"color:#666\">נשלח אלייך מתוך מערכת ברכות יום הולדת</p></div>",
+        "sender": "REPLACE_BREVO_SENDER@example.com",
+        "receipients": "={{ $('סידור שדות הטופס').item.json.recipientEmail }}",
+        "additionalFields": {}
+      },
+      "id": "77777777-aaaa-4b07-8007-birthdaybre007",
+      "name": "Brevo",
+      "type": "n8n-nodes-base.sendInBlue",
+      "typeVersion": 1,
+      "position": [1380, 300],
+      "credentials": {
+        "sendInBlueApi": {
+          "id": "BREVO_CREDENTIAL_ID",
+          "name": "Brevo account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { \"ok\": true, \"message\": \"הברכה נוצרה ונשלחת ברגעים אלה אל \" + $('סידור שדות הטופס').item.json.recipientName + \" למייל \" + $('סידור שדות הטופס').item.json.recipientEmail, \"greeting\": $('הכנת רשומה לאיירטייבל').item.json['ברכה שנוצרה'] } }}",
+        "options": {}
+      },
+      "id": "88888888-bbbb-4b08-8008-birthdayres008",
+      "name": "Respond to Webhook",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [1620, 300]
+    }
+  ],
+  "connections": {
+    "Webhook": {"main": [[{ "node": "סידור שדות הטופס", "type": "main", "index": 0 }]]},
+    "סידור שדות הטופס": {"main": [[{ "node": "AI Agent", "type": "main", "index": 0 }]]},
+    "Google Gemini Chat Model": {"ai_languageModel": [[{ "node": "AI Agent", "type": "ai_languageModel", "index": 0 }]]},
+    "AI Agent": {"main": [[{ "node": "הכנת רשומה לאיירטייבל", "type": "main", "index": 0 }]]},
+    "הכנת רשומה לאיירטייבל": {"main": [[{ "node": "Airtable", "type": "main", "index": 0 }]]},
+    "Airtable": {"main": [[{ "node": "Brevo", "type": "main", "index": 0 }]]},
+    "Brevo": {"main": [[{ "node": "Respond to Webhook", "type": "main", "index": 0 }]]}
+  },
+  "pinData": {},
+  "settings": { "executionOrder": "v1" },
+  "staticData": null,
+  "meta": { "templateCredsSetupCompleted": false }
+}
